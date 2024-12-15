@@ -30,6 +30,7 @@ public class Pipe {
     }
 
     public String Put(Pipe target) {
+        String retString = null;
         if (isLocked()) {
             return "Pipe is locked";
         } else {
@@ -50,10 +51,12 @@ public class Pipe {
                     target.pipeStack.push(pipeStack.pop());
                     numberOfNuts--;
                     target.numberOfNuts++;
+                    retString = "Success";
+                    return retString;
                 }
             }
         }
-        return null;
+        return "No Operation";
     }
 
     public boolean isLocked() {

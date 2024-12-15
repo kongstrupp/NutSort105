@@ -12,6 +12,7 @@ public class temp {
     public static String StackFull = "Stack is full";
     public static String EmptyPipe = "Cannot put from empty Pipe";
     public static String ReachedCap = "Target stack reached maximum capacity";
+    public static String Success = "Success";
 
     public static void main(String[] args) throws InterruptedException {
         clearFile("output.txt");
@@ -23,7 +24,7 @@ public class temp {
         }
     }
 
-    public static boolean runGame() {
+    public static boolean runGame() throws InterruptedException {
         int SlotSetup = 4;
 
         Character[] setup1 = {'B', 'Y', 'I', 'G'};
@@ -86,17 +87,25 @@ public class temp {
             } else {
                 boolean temp = false;
                 do {
+
                     int randomIndex = random.nextInt(PipesArray.size());
                     int randomIndex2;
                     do {
                         randomIndex2 = random.nextInt(PipesArray.size());
                     } while (randomIndex == randomIndex2);
+
                     Pipe randomPipe = PipesArray.get(randomIndex);
                     Pipe randomPipe2 = PipesArray.get(randomIndex2);
 
+
                     String ret = randomPipe.Put(randomPipe2);
 
-                    if (ret == null) {
+                    if (ret.equals("No Operation")) {
+                        temp = true;
+                    }
+
+                    if (ret.equals(Success)){
+                        System.out.println("Put from " + randomIndex + " to " + randomIndex2);
                         break;
                     }
 
@@ -115,7 +124,6 @@ public class temp {
                     if (ret.equals(EmptyPipe)) {
                         temp = true;
                     }
-
                 } while (temp);
 
 
@@ -124,7 +132,10 @@ public class temp {
                     inputStrings.add(pipeItem.getPipeString());
                 }
                 String[] stringArray = inputStrings.toArray(new String[0]);
+                System.out.println(mergeStrings(stringArray));
+                System.out.println("------------------------------------------------------------------------------------");
 
+                /**
                 try (BufferedWriter writer = new BufferedWriter(new FileWriter("output.txt", true))) {
                     String mergedString = mergeStrings(stringArray);
                     writer.write(mergedString);
@@ -141,12 +152,12 @@ public class temp {
                 if (areLastTenEqual(checkEqual)){
                     break;
                 }
+                 **/
 
                 if (winGame(PipesArray)) {
                     System.out.println("GAME IS WON!");
                     return true;
                 }
-
                 ITR--;
             }
         }
