@@ -78,6 +78,7 @@ public class temp {
         PipesArray.add(pipe14);
 
         Random random = new Random();
+        ArrayList<String> checkEqual = new ArrayList<>();
         while (true) {
             if (ITR == 0) {
                 System.out.println("Restart!");
@@ -123,14 +124,22 @@ public class temp {
                     inputStrings.add(pipeItem.getPipeString());
                 }
                 String[] stringArray = inputStrings.toArray(new String[0]);
+
                 try (BufferedWriter writer = new BufferedWriter(new FileWriter("output.txt", true))) {
                     String mergedString = mergeStrings(stringArray);
                     writer.write(mergedString);
+                    System.out.println(mergedString);
+                    checkEqual.add(mergedString);
                     writer.newLine();
                     writer.write("------------------------------------------------------------------------------------");
+                    System.out.println("------------------------------------------------------------------------------------");
                     writer.newLine();
                 } catch (IOException e) {
                     e.printStackTrace();
+                }
+
+                if (areLastTenEqual(checkEqual)){
+                    break;
                 }
 
                 if (winGame(PipesArray)) {
@@ -189,6 +198,19 @@ public class temp {
         } catch (IOException e) {
             System.err.println("Error clearing file: " + e.getMessage());
         }
+    }
+
+    public static boolean areLastTenEqual(ArrayList<String> list) {
+        if (list.size() < 50) {
+            return false; // Not enough elements to check
+        }
+        String lastString = list.get(list.size() - 1);
+        for (int i = list.size() - 50; i < list.size(); i++) {
+            if (!list.get(i).equals(lastString)) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }
