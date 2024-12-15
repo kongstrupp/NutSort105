@@ -29,26 +29,23 @@ public class Pipe {
         }
     }
 
-    public void Put(Pipe target) {
+    public String Put(Pipe target) {
         if (isLocked()) {
-            System.out.println("Pipe is locked");
+            return "Pipe is locked";
         } else {
             if (target.numberOfNuts >= target.numberOfSlots) {
-                System.out.println("Stack is full");
-                return;
+                return "Stack is full";
             }
 
             if (pipeStack.isEmpty()){
-                System.out.println("Cannot put from empty Pipe");
-                return;
+                return "Cannot put from empty Pipe";
             }
 
             if (target.pipeStack.isEmpty() || pipeStack.peekFirst() == target.pipeStack.peekFirst()) {
                 while (!pipeStack.isEmpty()
                         && (target.pipeStack.isEmpty() || pipeStack.peekFirst() == target.pipeStack.peekFirst())) {
                     if (target.numberOfNuts >= target.numberOfSlots) {
-                        System.out.println("Target stack reached maximum capacity");
-                        break;
+                        return "Target stack reached maximum capacity";
                     }
                     target.pipeStack.push(pipeStack.pop());
                     numberOfNuts--;
@@ -56,6 +53,7 @@ public class Pipe {
                 }
             }
         }
+        return null;
     }
 
     public boolean isLocked() {

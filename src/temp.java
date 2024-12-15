@@ -1,13 +1,23 @@
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
 
 public class temp {
-    public static int ITR = 1000000;
+    public static int ITR = 10000;
+    public static String LockedPipe = "Pipe is locked";
+    public static String StackFull = "Stack is full";
+    public static String EmptyPipe = "Cannot put from empty Pipe";
+    public static String ReachedCap = "Target stack reached maximum capacity";
+
     public static void main(String[] args) throws InterruptedException {
-        while(!runGame()){
-            ITR=1000000;
+        clearFile("output.txt");
+        while (!runGame()) {
+            ITR = 10000;
+            clearFile("output.txt");
             Thread.sleep(5000);
             System.out.println("Run");
         }
@@ -73,31 +83,61 @@ public class temp {
                 System.out.println("Restart!");
                 break;
             } else {
-                int randomIndex = random.nextInt(PipesArray.size());
-                int randomIndex2;
+                boolean temp = false;
                 do {
-                    randomIndex2 = random.nextInt(PipesArray.size());
-                } while (randomIndex == randomIndex2);
+                    int randomIndex = random.nextInt(PipesArray.size());
+                    int randomIndex2;
+                    do {
+                        randomIndex2 = random.nextInt(PipesArray.size());
+                    } while (randomIndex == randomIndex2);
+                    Pipe randomPipe = PipesArray.get(randomIndex);
+                    Pipe randomPipe2 = PipesArray.get(randomIndex2);
 
-                System.out.println(randomIndex);
-                System.out.println(randomIndex2);
-                Pipe randomPipe = PipesArray.get(randomIndex);
-                Pipe randomPipe2 = PipesArray.get(randomIndex2);
+                    String ret = randomPipe.Put(randomPipe2);
 
-                randomPipe.Put(randomPipe2);
+                    if (ret == null) {
+                        break;
+                    }
+
+                    if (ret.equals(LockedPipe)) {
+                        temp = true;
+                    }
+
+                    if (ret.equals(ReachedCap)) {
+                        temp = true;
+                    }
+
+                    if (ret.equals(StackFull)) {
+                        temp = true;
+                    }
+
+                    if (ret.equals(EmptyPipe)) {
+                        temp = true;
+                    }
+
+                } while (temp);
+
 
                 ArrayList<String> inputStrings = new ArrayList<>();
                 for (Pipe pipeItem : PipesArray) {
                     inputStrings.add(pipeItem.getPipeString());
                 }
                 String[] stringArray = inputStrings.toArray(new String[0]);
-                System.out.println(mergeStrings(stringArray));
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter("output.txt", true))) {
+                    String mergedString = mergeStrings(stringArray);
+                    writer.write(mergedString);
+                    writer.newLine();
+                    writer.write("------------------------------------------------------------------------------------");
+                    writer.newLine();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
-                System.out.println("-----------------------------------------------------------------------------------");
                 if (winGame(PipesArray)) {
                     System.out.println("GAME IS WON!");
                     return true;
                 }
+
                 ITR--;
             }
         }
@@ -143,5 +183,12 @@ public class temp {
         }
     }
 
+    public static void clearFile(String fileName) {
+        try (FileWriter writer = new FileWriter(fileName, false)) {
+            // Opening the file in overwrite mode clears its contents.
+        } catch (IOException e) {
+            System.err.println("Error clearing file: " + e.getMessage());
+        }
+    }
 
 }
