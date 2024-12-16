@@ -5,6 +5,9 @@ import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class temp {
     public static int ITR = 1000;
@@ -15,30 +18,34 @@ public class temp {
     public static String Success = "Success";
 
     public static void main(String[] args) throws InterruptedException {
-        Thread loopThread = new Thread(() -> {
-            while (true) { // Outer loop to restart the function
-                try {
-                    runGame();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-        Thread interrupterThread = new Thread(() -> {
+        AtomicReference<ExecutorService> executor = new AtomicReference<>(Executors.newSingleThreadExecutor()); // Single thread for the function
+        Runnable interruptableFunction = () -> {
             try {
-                while (true) {
-                    Thread.sleep(2000); // Wait for 2 seconds
-                    loopThread.interrupt(); // Interrupt the loop thread
+                if (runGame()) {
+                    System.exit(0);
                 }
             } catch (InterruptedException e) {
-                System.out.println("Interrupter thread stopped.");
+                System.out.println("Function interrupted!");
+            }
+        };
+
+        Thread interrupterThread = new Thread(() -> {
+            while (true) {
+                try {
+                    Thread.sleep(2000); // Wait for 2 seconds
+                    System.out.println("Restarting function...");
+                    executor.get().shutdownNow(); // Interrupt and stop current execution
+                    executor.set(Executors.newSingleThreadExecutor()); // Restart the thread pool
+                    executor.get().submit(interruptableFunction); // Restart the function
+                } catch (InterruptedException e) {
+                    System.out.println("Interrupter thread stopped.");
+                    break;
+                }
             }
         });
 
-        loopThread.start();
+        executor.get().submit(interruptableFunction); // Start the function
         interrupterThread.start();
-
     }
 
     public static boolean runGame() throws InterruptedException {
@@ -96,63 +103,59 @@ public class temp {
         Random random = new Random();
         ArrayList<String> checkEqual = new ArrayList<>();
 
-        try {
-            while (true) {
-                boolean temp = false;
+
+        while (true) {
+            boolean temp = false;
+            do {
+                int randomIndex = random.nextInt(PipesArray.size());
+                int randomIndex2;
                 do {
-                    int randomIndex = random.nextInt(PipesArray.size());
-                    int randomIndex2;
-                    do {
-                        randomIndex2 = random.nextInt(PipesArray.size());
-                    } while (randomIndex == randomIndex2);
+                    randomIndex2 = random.nextInt(PipesArray.size());
+                } while (randomIndex == randomIndex2);
 
-                    Pipe randomPipe = PipesArray.get(randomIndex);
-                    Pipe randomPipe2 = PipesArray.get(randomIndex2);
+                Pipe randomPipe = PipesArray.get(randomIndex);
+                Pipe randomPipe2 = PipesArray.get(randomIndex2);
 
-                    String ret = randomPipe.Put(randomPipe2);
+                String ret = randomPipe.Put(randomPipe2);
 
-                    if (ret.equals("No Operation")) {
-                        temp = true;
-                    }
-
-                    if (ret.equals(Success)) {
-                        System.out.println("Put from " + randomIndex + " to " + randomIndex2);
-                        break;
-                    }
-
-                    if (ret.equals(LockedPipe)) {
-                        temp = true;
-                    }
-
-                    if (ret.equals(ReachedCap)) {
-                        temp = true;
-                    }
-
-                    if (ret.equals(StackFull)) {
-                        temp = true;
-                    }
-
-                    if (ret.equals(EmptyPipe)) {
-                        temp = true;
-                    }
-                } while (temp);
-
-                ArrayList<String> inputStrings = new ArrayList<>();
-                for (Pipe pipeItem : PipesArray) {
-                    inputStrings.add(pipeItem.getPipeString());
+                if (ret.equals("No Operation")) {
+                    temp = true;
                 }
-                String[] stringArray = inputStrings.toArray(new String[0]);
-                System.out.println(mergeStrings(stringArray));
-                System.out.println("------------------------------------------------------------------------------------");
 
-                if (winGame(PipesArray)) {
-                    System.out.println("GAME IS WON!");
-                    return true;
+                if (ret.equals(Success)) {
+                    System.out.println("Put from " + randomIndex + " to " + randomIndex2);
+                    break;
                 }
+
+                if (ret.equals(LockedPipe)) {
+                    temp = true;
+                }
+
+                if (ret.equals(ReachedCap)) {
+                    temp = true;
+                }
+
+                if (ret.equals(StackFull)) {
+                    temp = true;
+                }
+
+                if (ret.equals(EmptyPipe)) {
+                    temp = true;
+                }
+            } while (temp);
+
+            ArrayList<String> inputStrings = new ArrayList<>();
+            for (Pipe pipeItem : PipesArray) {
+                inputStrings.add(pipeItem.getPipeString());
             }
-        } catch (InterruptedException e) {
-            System.out.println("Interrupted! Exiting both loops and restarting.");
-            return false;
+            String[] stringArray = inputStrings.toArray(new String[0]);
+            System.out.println(mergeStrings(stringArray));
+            System.out.println("------------------------------------------------------------------------------------");
+
+            if (winGame(PipesArray)) {
+                System.out.println("GAME IS WON!");
+                return true;
+            }
         }
     }
 

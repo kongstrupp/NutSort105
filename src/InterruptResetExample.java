@@ -1,44 +1,45 @@
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicReference;
+
 public class InterruptResetExample {
     public static void main(String[] args) {
-        Thread loopThread = new Thread(() -> {
-            while (true) {
-                boolean restart = runLoop();
-                if (!restart) {
-                    break; // Exit the outer loop if restarting is not required
-                }
+        AtomicReference<ExecutorService> executor = new AtomicReference<>(Executors.newSingleThreadExecutor()); // Single thread for the function
+        Runnable interruptableFunction = () -> {
+            try {
+                nestedFunction();
+            } catch (InterruptedException e) {
+                System.out.println("Function interrupted!");
             }
-        });
+        };
 
         Thread interrupterThread = new Thread(() -> {
-            try {
-                while (true) {
+            while (true) {
+                try {
                     Thread.sleep(2000); // Wait for 2 seconds
-                    loopThread.interrupt(); // Interrupt the loop thread
+                    System.out.println("Restarting function...");
+                    executor.get().shutdownNow(); // Interrupt and stop current execution
+                    executor.set(Executors.newSingleThreadExecutor()); // Restart the thread pool
+                    executor.get().submit(interruptableFunction); // Restart the function
+                } catch (InterruptedException e) {
+                    System.out.println("Interrupter thread stopped.");
+                    break;
                 }
-            } catch (InterruptedException e) {
-                System.out.println("Interrupter thread stopped.");
             }
         });
 
-        loopThread.start();
+        executor.get().submit(interruptableFunction); // Start the function
         interrupterThread.start();
     }
 
-    public static boolean runLoop() {
-        int counter = 0; // Initialize the counter
-        try {
-            while (true) { // Outer loop
-                System.out.println("Outer loop: Counter " + counter);
+    private static void nestedFunction() throws InterruptedException {
+        while (true) { // Outer loop
+            System.out.println("In outer loop...");
+            Thread.sleep(500); // Simulate work
 
-                while (true) { // Inner loop
-                    counter++;
-                    System.out.println(counter);
-                    Thread.sleep(100); // Simulate work in the inner loop
-                }
+            while (true) { // Nested loop
+                System.out.println("In nested loop...");
+                Thread.sleep(500); // Simulate work
             }
-        } catch (InterruptedException e) {
-            System.out.println("Interrupted! Exiting both loops and restarting.");
-            return true; // Restart the entire function
         }
     }
 }
