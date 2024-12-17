@@ -43,15 +43,20 @@ public class Pipe {
             }
 
             if (target.pipeStack.isEmpty() || pipeStack.peekFirst() == target.pipeStack.peekFirst()) {
+                boolean partialFailure = false;
                 while (!pipeStack.isEmpty()
                         && (target.pipeStack.isEmpty() || pipeStack.peekFirst() == target.pipeStack.peekFirst())) {
                     if (target.numberOfNuts >= target.numberOfSlots) {
-                        return "Target stack reached maximum capacity";
+                        partialFailure = true; // Mark this iteration as a failure but continue
+                        break;
                     }
                     target.pipeStack.push(pipeStack.pop());
                     numberOfNuts--;
                     target.numberOfNuts++;
                     retString = "Success";
+                }
+                if (partialFailure) {
+                    retString = "Success (Partial Failure: Target capacity reached)";
                 }
                 return retString;
             }

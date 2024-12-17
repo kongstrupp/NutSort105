@@ -18,34 +18,7 @@ public class temp {
     public static String Success = "Success";
 
     public static void main(String[] args) throws InterruptedException {
-        AtomicReference<ExecutorService> executor = new AtomicReference<>(Executors.newSingleThreadExecutor()); // Single thread for the function
-        Runnable interruptableFunction = () -> {
-            try {
-                if (runGame()) {
-                    System.exit(0);
-                }
-            } catch (InterruptedException e) {
-                System.out.println("Function interrupted!");
-            }
-        };
-
-        Thread interrupterThread = new Thread(() -> {
-            while (true) {
-                try {
-                    Thread.sleep(4000); // Wait for 2 seconds
-                    System.out.println("Restarting function...");
-                    executor.get().shutdownNow(); // Interrupt and stop current execution
-                    executor.set(Executors.newSingleThreadExecutor()); // Restart the thread pool
-                    executor.get().submit(interruptableFunction); // Restart the function
-                } catch (InterruptedException e) {
-                    System.out.println("Interrupter thread stopped.");
-                    break;
-                }
-            }
-        });
-
-        executor.get().submit(interruptableFunction); // Start the function
-        interrupterThread.start();
+        runGame();
     }
 
     public static boolean runGame() throws InterruptedException {
