@@ -32,7 +32,7 @@ public class temp {
         Thread interrupterThread = new Thread(() -> {
             while (true) {
                 try {
-                    Thread.sleep(2000); // Wait for 2 seconds
+                    Thread.sleep(4000); // Wait for 2 seconds
                     System.out.println("Restarting function...");
                     executor.get().shutdownNow(); // Interrupt and stop current execution
                     executor.set(Executors.newSingleThreadExecutor()); // Restart the thread pool

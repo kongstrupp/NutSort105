@@ -52,8 +52,8 @@ public class Pipe {
                     numberOfNuts--;
                     target.numberOfNuts++;
                     retString = "Success";
-                    return retString;
                 }
+                return retString;
             }
         }
         return "No Operation";
