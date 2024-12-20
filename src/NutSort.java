@@ -1,17 +1,52 @@
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.sql.SQLOutput;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 
-public class temp2 {
-
+public class NutSort {
+    public static int ITR_INNER = 10000;
+    public static int ITR_OUTER = 100000;
     public static String LockedPipe = "Pipe is locked";
     public static String StackFull = "Stack is full";
     public static String EmptyPipe = "Cannot put from empty Pipe";
     public static String ReachedCap = "Target stack reached maximum capacity";
     public static String Success = "Success";
+    public static StringBuilder stringBuilder = new StringBuilder();
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
+        Instant start = Instant.now();
+        int restartNumber = 0;
 
+        boolean run_game = true;
+        while (run_game) {
+            boolean game_holder = runGame();
+            if (game_holder) {
+                run_game = false;
+                System.out.println(stringBuilder);
+            }
+            if (ITR_OUTER == 0) {
+                ITR_OUTER = 100000;
+                ITR_INNER = 10000;
+                restartNumber++;
+                System.out.println("Restarting from MAIN, number: " + restartNumber);
+                Instant end = Instant.now();
+                Duration elapsed = Duration.between(start, end);
+                System.out.println("Elapsed time: " + elapsed.toSeconds() + " seconds.");
+                stringBuilder = new StringBuilder();
+                Thread.sleep(1000);
+            }
+        }
+    }
+
+    public static boolean runGame() throws InterruptedException {
         int SlotSetup = 4;
 
         Character[] setup1 = {'B', 'Y', 'I', 'G'};
@@ -46,6 +81,9 @@ public class temp2 {
 
         Pipe pipe13 = new Pipe(SlotSetup, null);
         Pipe pipe14 = new Pipe(SlotSetup, null);
+        Pipe pipe15 = new Pipe(SlotSetup, null);
+        Pipe pipe16 = new Pipe(SlotSetup, null);
+
 
         ArrayList<Pipe> PipesArray = new ArrayList<>();
         PipesArray.add(pipe1);
@@ -62,32 +100,26 @@ public class temp2 {
         PipesArray.add(pipe12);
         PipesArray.add(pipe13);
         PipesArray.add(pipe14);
+        //PipesArray.add(pipe15);
+        //PipesArray.add(pipe16);
 
         Random random = new Random();
         ArrayList<String> checkEqual = new ArrayList<>();
-        Scanner scanner = new Scanner(System.in);
-        boolean win = false;
+        boolean run = true;
 
-        while (true) {
-            boolean temp = true;
+
+        while (run) {
+            boolean temp = false;
             do {
-
-                int from, to;
-
+                int randomIndex = random.nextInt(PipesArray.size());
+                int randomIndex2;
                 do {
-                    System.out.print("Enter the first number (0-14): ");
-                    from = scanner.nextInt();
-                } while (from < 0 || from > 13);
+                    randomIndex2 = random.nextInt(PipesArray.size());
+                } while (randomIndex == randomIndex2);
 
-                do {
-                    System.out.print("Enter the second number (0-14): ");
-                    to = scanner.nextInt();
-                } while (to < 0 || to > 13);
+                Pipe randomPipe = PipesArray.get(randomIndex);
+                Pipe randomPipe2 = PipesArray.get(randomIndex2);
 
-                System.out.println("You entered: " + from + " and " + to);
-
-                Pipe randomPipe = PipesArray.get(from);
-                Pipe randomPipe2 = PipesArray.get(to);
                 String ret = randomPipe.Put(randomPipe2);
 
                 if (ret.equals("No Operation")) {
@@ -95,8 +127,10 @@ public class temp2 {
                 }
 
                 if (ret.equals(Success)) {
-                    System.out.println("Put from " + from + " to " + to);
-                    temp = false;
+                    //System.out.println("Put from " + randomIndex + " to " + randomIndex2);
+                    stringBuilder.append("Put from " + randomIndex + " to " + randomIndex2);
+                    stringBuilder.append("\n");
+                    break;
                 }
 
                 if (ret.equals(LockedPipe)) {
@@ -114,6 +148,13 @@ public class temp2 {
                 if (ret.equals(EmptyPipe)) {
                     temp = true;
                 }
+
+                if (ITR_INNER == 0){
+                    ITR_INNER = 10000;
+                    break;
+                }
+
+                ITR_INNER--;
             } while (temp);
 
             ArrayList<String> inputStrings = new ArrayList<>();
@@ -121,23 +162,31 @@ public class temp2 {
                 inputStrings.add(pipeItem.getPipeString());
             }
             String[] stringArray = inputStrings.toArray(new String[0]);
-            System.out.println(mergeStrings(stringArray));
-            System.out.println("{'0'} {'1'} {'2'} {'3'} {'4'} {'5'} {'6'} {'7'} {'8'} {'9'} {'10'} {'11'} {'12'} {'13'}");
-            System.out.println("------------------------------------------------------------------------------------");
-
+            //System.out.println(mergeStrings(stringArray));
+            stringBuilder.append(mergeStrings(stringArray));
+            stringBuilder.append("\n");
+            stringBuilder.append("{'0'} {'1'} {'2'} {'3'} {'4'} {'5'} {'6'} {'7'} {'8'} {'9'} {'10'} {'11'} {'12'} {'13'}");
+            stringBuilder.append("\n");
+            stringBuilder.append("------------------------------------------------------------------------------------");
+            stringBuilder.append("\n");
+            //System.out.println("{'0'} {'1'} {'2'} {'3'} {'4'} {'5'} {'6'} {'7'} {'8'} {'9'} {'10'} {'11'} {'12'} {'13'}");
+            //System.out.println("------------------------------------------------------------------------------------");
 
             if (winGame(PipesArray)) {
                 System.out.println("GAME IS WON!");
-                win = true;
+                return true;
             }
 
-            if (win) {
-                System.exit(0);
+            if (ITR_OUTER == 0){
+                System.out.println("Restart");
                 break;
             }
 
+            ITR_OUTER--;
         }
+        return false;
     }
+
 
     public static String mergeStrings(String[] inputStrings) {
         String[][] splitLines = new String[inputStrings.length][];
@@ -173,5 +222,9 @@ public class temp2 {
         return true;
     }
 
-
+    public static void printLocks(ArrayList<Pipe> pipeList) {
+        for (Pipe pipe : pipeList) {
+            System.out.println(pipe.isLocked());
+        }
+    }
 }

@@ -56,7 +56,7 @@ public class Pipe {
                     retString = "Success";
                 }
                 if (partialFailure) {
-                    retString = "Success (Partial Failure: Target capacity reached)";
+                    retString = "Success";
                 }
                 return retString;
             }

@@ -1,27 +1,17 @@
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicReference;
 
-public class temp {
-    public static int ITR = 1000;
+public class Debug {
+
     public static String LockedPipe = "Pipe is locked";
     public static String StackFull = "Stack is full";
     public static String EmptyPipe = "Cannot put from empty Pipe";
     public static String ReachedCap = "Target stack reached maximum capacity";
     public static String Success = "Success";
 
-    public static void main(String[] args) throws InterruptedException {
-        runGame();
-    }
+    public static void main(String[] args) {
 
-    public static boolean runGame() throws InterruptedException {
         int SlotSetup = 4;
 
         Character[] setup1 = {'B', 'Y', 'I', 'G'};
@@ -75,20 +65,29 @@ public class temp {
 
         Random random = new Random();
         ArrayList<String> checkEqual = new ArrayList<>();
-
+        Scanner scanner = new Scanner(System.in);
+        boolean win = false;
 
         while (true) {
-            boolean temp = false;
+            boolean temp = true;
             do {
-                int randomIndex = random.nextInt(PipesArray.size());
-                int randomIndex2;
+
+                int from, to;
+
                 do {
-                    randomIndex2 = random.nextInt(PipesArray.size());
-                } while (randomIndex == randomIndex2);
+                    System.out.print("Enter the first number (0-14): ");
+                    from = scanner.nextInt();
+                } while (from < 0 || from > 13);
 
-                Pipe randomPipe = PipesArray.get(randomIndex);
-                Pipe randomPipe2 = PipesArray.get(randomIndex2);
+                do {
+                    System.out.print("Enter the second number (0-14): ");
+                    to = scanner.nextInt();
+                } while (to < 0 || to > 13);
 
+                System.out.println("You entered: " + from + " and " + to);
+
+                Pipe randomPipe = PipesArray.get(from);
+                Pipe randomPipe2 = PipesArray.get(to);
                 String ret = randomPipe.Put(randomPipe2);
 
                 if (ret.equals("No Operation")) {
@@ -96,8 +95,8 @@ public class temp {
                 }
 
                 if (ret.equals(Success)) {
-                    System.out.println("Put from " + randomIndex + " to " + randomIndex2);
-                    break;
+                    System.out.println("Put from " + from + " to " + to);
+                    temp = false;
                 }
 
                 if (ret.equals(LockedPipe)) {
@@ -123,15 +122,22 @@ public class temp {
             }
             String[] stringArray = inputStrings.toArray(new String[0]);
             System.out.println(mergeStrings(stringArray));
+            System.out.println("{'0'} {'1'} {'2'} {'3'} {'4'} {'5'} {'6'} {'7'} {'8'} {'9'} {'10'} {'11'} {'12'} {'13'}");
             System.out.println("------------------------------------------------------------------------------------");
+
 
             if (winGame(PipesArray)) {
                 System.out.println("GAME IS WON!");
-                return true;
+                win = true;
             }
+
+            if (win) {
+                System.exit(0);
+                break;
+            }
+
         }
     }
-
 
     public static String mergeStrings(String[] inputStrings) {
         String[][] splitLines = new String[inputStrings.length][];
@@ -167,31 +173,5 @@ public class temp {
         return true;
     }
 
-    public static void printLocks(ArrayList<Pipe> pipeList) {
-        for (Pipe pipe : pipeList) {
-            System.out.println(pipe.isLocked());
-        }
-    }
-
-    public static void clearFile(String fileName) {
-        try (FileWriter writer = new FileWriter(fileName, false)) {
-            // Opening the file in overwrite mode clears its contents.
-        } catch (IOException e) {
-            System.err.println("Error clearing file: " + e.getMessage());
-        }
-    }
-
-    public static boolean areLastTenEqual(ArrayList<String> list) {
-        if (list.size() < 50) {
-            return false; // Not enough elements to check
-        }
-        String lastString = list.get(list.size() - 1);
-        for (int i = list.size() - 50; i < list.size(); i++) {
-            if (!list.get(i).equals(lastString)) {
-                return false;
-            }
-        }
-        return true;
-    }
 
 }
