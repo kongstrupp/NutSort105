@@ -29,6 +29,10 @@ public class Pipe {
         }
     }
 
+    public FixedStack<Character> getStack() {
+        return pipeStack;
+    }
+
     public String Put(Pipe target) {
         String retString = null;
         if (isLocked()) {
