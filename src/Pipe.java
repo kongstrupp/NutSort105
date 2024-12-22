@@ -1,7 +1,8 @@
+import java.io.Serializable;
 import java.sql.SQLOutput;
 import java.util.*;
 
-public class Pipe {
+public class Pipe implements Serializable {
 
     Character[] pipeSetup;
     FixedStack<Character> pipeStack;

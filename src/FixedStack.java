@@ -1,4 +1,6 @@
-public class FixedStack<T> {
+import java.io.Serializable;
+
+public class FixedStack<T> implements Serializable {
     private final T[] stack;
     private final int size;
     private int top;
