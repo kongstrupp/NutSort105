@@ -1,10 +1,7 @@
 import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Objects;
-import java.util.Random;
-import java.util.Stack;
+import java.util.*;
 
 public class NutSort implements Serializable {
     public static int ITR_INNER = 10000;
@@ -78,25 +75,21 @@ public class NutSort implements Serializable {
         PipesArray.add(pipe14);
         //PipesArray.add(pipe15);
         //PipesArray.add(pipe16);
+
         return PipesArray;
+    }
+
+    public static ArrayList<Pipe> LoadClone(ArrayList<Pipe> pipes){
+        return DeepCloneUtil.deepClone(pipes);
     }
 
     public static boolean runGame() throws InterruptedException {
         ArrayList<Pipe> PipesArray = LoadGame();
 
         PipesArray.get(0).Put(PipesArray.get(13));
-        ArrayList<Pipe> PipesArray2 = DeepCloneUtil.deepClone(PipesArray);
-
-        ArrayList<int[]> validMoves = getValidMoves(PipesArray2);
-        System.out.println("Valid moves:");
-        for (int[] arr : validMoves) {
-            System.out.println("from " + arr[0] + " to " + arr[1]);
-        }
-
-        printOrAppend(PipesArray2, false);
-
-        printOrAppend(PipesArray, false);
-
+        printOrAppend(PipesArray,false);
+        getValidMoves(PipesArray);
+        printOrAppend(PipesArray,false);
 
         if (winGame(PipesArray)) {
             System.out.println("GAME IS WON!");
@@ -104,12 +97,6 @@ public class NutSort implements Serializable {
         }
 
         return false;
-
-        //ArrayList<int[]> validMoves = getValidMoves(cp);
-        //System.out.println("Valid moves:");
-        //for (int[] arr : validMoves) {
-        //    System.out.println("from " + arr[0] + " to " + arr[1]);
-        //}
     }
 
 
@@ -178,17 +165,22 @@ public class NutSort implements Serializable {
         for (int i = 0; i < alterPipes.size(); i++) {
             for (int j = 0; j < alterPipes.size(); j++) {
                 if (i != j) {
-                    String check = alterPipes.get(i).Put(alterPipes.get(j));
+                    String check = alterPipes.get(i).canAccept(alterPipes.get(j));
                     if (check.equals(Success)) {
                         from = i;
                         to = j;
                         int[] arr = {from, to};
                         ret.add(arr);
-                        alterPipes = pipes;
                     }
                 }
             }
         }
+
+        System.out.println("Valid moves:");
+        for (int[] arr : ret) {
+            System.out.println("from " + arr[0] + " to " + arr[1]);
+        }
+
         return ret;
     }
 
@@ -197,5 +189,5 @@ public class NutSort implements Serializable {
             System.out.println(pipe.isLocked());
         }
     }
-    
+
 }
