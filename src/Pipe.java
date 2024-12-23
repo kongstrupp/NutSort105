@@ -69,6 +69,27 @@ public class Pipe implements Serializable {
         return "No Operation";
     }
 
+    public String canAccept(Pipe target) {
+        String retString = null;
+        if (isLocked()) {
+            return "Pipe is locked";
+        } else {
+            if (target.numberOfNuts >= target.numberOfSlots) {
+                return "Stack is full";
+            }
+
+            if (pipeStack.isEmpty()){
+                return "Cannot put from empty Pipe";
+            }
+
+            if (target.pipeStack.isEmpty() || pipeStack.peekFirst() == target.pipeStack.peekFirst()) {
+                retString = "Success";
+                return retString;
+            }
+        }
+        return "No Operation";
+    }
+
     public boolean isLocked() {
         if (numberOfNuts < numberOfSlots) {
             return false;
