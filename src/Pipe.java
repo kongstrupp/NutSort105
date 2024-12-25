@@ -27,11 +27,8 @@ public class Pipe implements Serializable {
                     pipeStack.push(pipeSetup[i]);
                 }
             } else throw new IndexOutOfBoundsException("Setup cannot be larger then slots");
-        }
-    }
 
-    public FixedStack<Character> getStack() {
-        return pipeStack;
+        }
     }
 
     public String Put(Pipe target) {

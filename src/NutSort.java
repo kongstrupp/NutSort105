@@ -1,21 +1,17 @@
+import java.awt.print.PrinterIOException;
 import java.io.Serializable;
+import java.sql.SQLOutput;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 
 public class NutSort implements Serializable {
-    public static int ITR_INNER = 10000;
-    public static int ITR_OUTER = 100000;
-    public static String LockedPipe = "Pipe is locked";
-    public static String StackFull = "Stack is full";
-    public static String EmptyPipe = "Cannot put from empty Pipe";
-    public static String ReachedCap = "Target stack reached maximum capacity";
     public static String Success = "Success";
-    public static ArrayList<Pipe> STATE;
     public static StringBuilder stringBuilder = new StringBuilder();
 
     public static void main(String[] args) throws InterruptedException {
         runGame();
+        System.out.println(stringBuilder);
     }
 
 
@@ -73,30 +69,78 @@ public class NutSort implements Serializable {
         PipesArray.add(pipe12);
         PipesArray.add(pipe13);
         PipesArray.add(pipe14);
-        //PipesArray.add(pipe15);
-        //PipesArray.add(pipe16);
 
         return PipesArray;
     }
 
-    public static ArrayList<Pipe> LoadClone(ArrayList<Pipe> pipes){
+    public static ArrayList<Pipe> LoadGameSimple() {
+        int SlotSetup = 4;
+
+        Character[] setup1 = {'R', 'B', 'R', 'B'};
+        Character[] setup2 = {'B', 'R', 'R', 'B'};
+
+        Pipe pipe1 = new Pipe(SlotSetup, setup1);
+        Pipe pipe2 = new Pipe(SlotSetup, setup2);
+        Pipe pipe3 = new Pipe(SlotSetup, null);
+        Pipe pipe4 = new Pipe(SlotSetup, null);
+
+
+        ArrayList<Pipe> PipesArray = new ArrayList<>();
+        PipesArray.add(pipe1);
+        PipesArray.add(pipe2);
+        PipesArray.add(pipe3);
+        PipesArray.add(pipe4);
+
+
+        return PipesArray;
+    }
+
+
+    public static ArrayList<Pipe> LoadClone(ArrayList<Pipe> pipes) {
         return DeepCloneUtil.deepClone(pipes);
     }
 
     public static boolean runGame() throws InterruptedException {
-        ArrayList<Pipe> PipesArray = LoadGame();
+        int counter = 0;
+        boolean run = true;
+        while (run) {
+            ArrayList<Pipe> PipesArray = LoadGame();
+            System.out.println("Moves: " + counter);
+            stringBuilder = new StringBuilder();
+            counter = 0;
+            System.out.println("Load Game");
+            Random random = new Random();
+            int num1 = 0;
+            int num2 = 0;
 
-        PipesArray.get(0).Put(PipesArray.get(13));
-        printOrAppend(PipesArray,false);
-        getValidMoves(PipesArray);
-        printOrAppend(PipesArray,false);
+            do {
+                ArrayList<int[]> moves = getValidMoves(PipesArray);
 
-        if (winGame(PipesArray)) {
-            System.out.println("GAME IS WON!");
-            return true;
+                if (moves.size() == 0) {
+                    System.out.println("No moves");
+                    break;
+                }
+
+                if (isRepetitiveMove(PipesArray)) {
+                    System.out.println("Repetitive moves");
+                    break;
+                }
+
+                num1 = random.nextInt(moves.size());
+                int[] arr = moves.get(num1);
+                PipesArray.get(arr[0]).Put(PipesArray.get(arr[1]));
+                printOrAppend(PipesArray,true);
+                stringBuilder.append(arr[0]).append(" ").append(arr[1]);
+                counter++;
+
+                if (winGame(PipesArray)) {
+                    System.out.println("Win game");
+                    return true;
+                }
+
+            } while (true);
         }
-
-        return false;
+        return true;
     }
 
 
@@ -176,11 +220,6 @@ public class NutSort implements Serializable {
             }
         }
 
-        System.out.println("Valid moves:");
-        for (int[] arr : ret) {
-            System.out.println("from " + arr[0] + " to " + arr[1]);
-        }
-
         return ret;
     }
 
@@ -188,6 +227,34 @@ public class NutSort implements Serializable {
         for (Pipe pipe : pipeList) {
             System.out.println(pipe.isLocked());
         }
+    }
+
+    public static String[] encodeState(ArrayList<Pipe> screws) {
+        ArrayList<String> inputStrings = new ArrayList<>();
+        for (Pipe pipeItem : screws) {
+            inputStrings.add(pipeItem.getPipeString());
+        }
+        return inputStrings.toArray(new String[0]);
+    }
+
+
+    private static boolean isRepetitiveMove(ArrayList<Pipe> pipes) {
+        ArrayList<Pipe> clonePipes = LoadClone(pipes);
+        ArrayList<int[]> moves = getValidMoves(clonePipes);
+
+        for (int[] move : moves) {
+            int from = move[0];
+            int to = move[1];
+            ArrayList<Pipe> tempPipes = LoadClone(clonePipes);
+            tempPipes.get(from).Put(tempPipes.get(to));
+            tempPipes.get(to).Put(tempPipes.get(from));
+
+            if (!(Arrays.equals(encodeState(tempPipes), encodeState(clonePipes)))) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
 }

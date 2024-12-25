@@ -9,6 +9,7 @@ public class Debug {
     public static String EmptyPipe = "Cannot put from empty Pipe";
     public static String ReachedCap = "Target stack reached maximum capacity";
     public static String Success = "Success";
+    public static StringBuilder stringBuilder = new StringBuilder();
 
     public static void main(String[] args) {
 
@@ -63,6 +64,8 @@ public class Debug {
         PipesArray.add(pipe13);
         PipesArray.add(pipe14);
 
+
+        printOrAppend(PipesArray,false);
         Random random = new Random();
         ArrayList<String> checkEqual = new ArrayList<>();
         Scanner scanner = new Scanner(System.in);
@@ -136,6 +139,27 @@ public class Debug {
                 break;
             }
 
+        }
+    }
+
+    public static void printOrAppend(ArrayList<Pipe> pipes, boolean append) {
+        ArrayList<String> inputStrings = new ArrayList<>();
+        for (Pipe pipeItem : pipes) {
+            inputStrings.add(pipeItem.getPipeString());
+        }
+        String[] stringArray = inputStrings.toArray(new String[0]);
+
+        if (append) {
+            stringBuilder.append(mergeStrings(stringArray));
+            stringBuilder.append("\n");
+            stringBuilder.append("{'0'} {'1'} {'2'} {'3'} {'4'} {'5'} {'6'} {'7'} {'8'} {'9'} {'10'} {'11'} {'12'} {'13'}");
+            stringBuilder.append("\n");
+            stringBuilder.append("------------------------------------------------------------------------------------");
+            stringBuilder.append("\n");
+        } else {
+            System.out.println(mergeStrings(stringArray));
+            System.out.println("{'0'} {'1'} {'2'} {'3'} {'4'} {'5'} {'6'} {'7'} {'8'} {'9'} {'10'} {'11'} {'12'} {'13'}");
+            System.out.println("------------------------------------------------------------------------------------");
         }
     }
 
